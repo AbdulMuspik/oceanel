@@ -100,7 +100,6 @@ export interface WaterRippleEffectProps {
   text?: string;
   textColor?: string;
   backgroundColor?: string;
-  fontSize?: number;
   fontFamily?: string;
   className?: string;
   style?: React.CSSProperties;
@@ -113,7 +112,6 @@ const WaterRippleEffect: React.FC<WaterRippleEffectProps> = ({
   text = 'Oceanel',
   textColor = '#b8e1fe',
   backgroundColor = '#000000',
-  fontSize = 250,
   fontFamily = 'Test Söhne, Arial, sans-serif',
   className = '',
   style = {},
@@ -138,7 +136,15 @@ const WaterRippleEffect: React.FC<WaterRippleEffectProps> = ({
     ctx.fillStyle = backgroundColor;
     ctx.fillRect(0, 0, width, height);
 
-    const scaledFontSize = Math.round(fontSize * window.devicePixelRatio);
+    // Calculate responsive font size based on viewport dimensions
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const minDimension = Math.min(viewportWidth, viewportHeight);
+    
+    // Scale font size based on viewport size (minimum 60px, maximum 300px)
+    const responsiveFontSize = Math.max(60, Math.min(300, minDimension * 0.15));
+    const scaledFontSize = Math.round(responsiveFontSize * window.devicePixelRatio);
+    
     ctx.fillStyle = textColor;
     ctx.font = `bold ${scaledFontSize}px ${fontFamily}`;
     ctx.textAlign = 'center';
@@ -154,7 +160,7 @@ const WaterRippleEffect: React.FC<WaterRippleEffectProps> = ({
     texture.format = THREE.RGBAFormat;
     
     return texture;
-  }, [text, textColor, backgroundColor, fontSize, fontFamily]);
+  }, [text, textColor, backgroundColor, fontFamily]);
 
   const initThreeJS = useCallback(() => {
     if (!containerRef.current) return;
@@ -331,7 +337,21 @@ const WaterRippleEffect: React.FC<WaterRippleEffectProps> = ({
         uniforms.resolution.value.set(newWidth * window.devicePixelRatio, newHeight * window.devicePixelRatio);
       }
     }
-  }, []);
+    
+    // Recreate text texture with new responsive font size
+    const validWidth = Math.max(Math.floor(newWidth * window.devicePixelRatio), 1);
+    const validHeight = Math.max(Math.floor(newHeight * window.devicePixelRatio), 1);
+    const newTextTexture = createTextTexture(validWidth, validHeight);
+    
+    // Update the render material's textureB uniform
+    const renderQuad = sceneRef.current?.children[0] as THREE.Mesh;
+    if (renderQuad?.material && 'uniforms' in renderQuad.material) {
+      const renderUniforms = (renderQuad.material as THREE.ShaderMaterial).uniforms;
+      if (renderUniforms.textureB && newTextTexture) {
+        renderUniforms.textureB.value = newTextTexture;
+      }
+    }
+  }, [createTextTexture]);
 
   useEffect(() => {
     const cleanup = initThreeJS();

@@ -65,7 +65,7 @@ export function Navbar() {
   );
 
   const navLinksData = [
-    { label: 'Home', href: '/' },
+    { label: 'Dashboard', href: '/dashboard' },
     { label: 'About', href: '/about' },
     { label: 'Contact', href: '/contact' },
   ];
