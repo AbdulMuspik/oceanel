@@ -1,13 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
-import React, { useState,useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useRouter } from "next/navigation";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import { Navbar } from "@/components/navbar";
 import { useAuthActions } from "@convex-dev/auth/react";
 
@@ -34,7 +34,7 @@ interface ShaderProps {
 interface SignInPageProps {
   className?: string;
 }
-      
+
 export const CanvasRevealEffect = ({
   animationSpeed = 10,
   opacities = [0.3, 0.3, 0.3, 0.5, 0.5, 0.5, 0.8, 0.8, 0.8, 1],
@@ -72,13 +72,13 @@ export const CanvasRevealEffect = ({
       {showGradient && (
         // Adjust gradient colors if needed based on background (was bg-white, now likely uses containerClassName bg)
         // Example assuming a dark background like the SignInPage uses:
-         <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent" />
       )}
     </div>
   );
 };
 
-    
+
 interface DotMatrixProps {
   colors?: number[][];
   opacities?: number[];
@@ -180,16 +180,14 @@ const DotMatrix: React.FC<DotMatrixProps> = ({
 
         void main() {
             vec2 st = fragCoord.xy;
-            ${
-              center.includes("x")
-                ? "st.x -= abs(floor((mod(u_resolution.x, u_total_size) - u_dot_size) * 0.5));"
-                : ""
-            }
-            ${
-              center.includes("y")
-                ? "st.y -= abs(floor((mod(u_resolution.y, u_total_size) - u_dot_size) * 0.5));"
-                : ""
-            }
+            ${center.includes("x")
+          ? "st.x -= abs(floor((mod(u_resolution.x, u_total_size) - u_dot_size) * 0.5));"
+          : ""
+        }
+            ${center.includes("y")
+          ? "st.y -= abs(floor((mod(u_resolution.y, u_total_size) - u_dot_size) * 0.5));"
+          : ""
+        }
 
             float opacity = step(0.0, st.x);
             opacity *= step(0.0, st.y);
@@ -248,7 +246,6 @@ const DotMatrix: React.FC<DotMatrixProps> = ({
 const ShaderMaterial = ({
   source,
   uniforms,
-  maxFps = 60,
 }: {
   source: string;
   hovered?: boolean;
@@ -257,70 +254,67 @@ const ShaderMaterial = ({
 }) => {
   const { size } = useThree();
   const ref = useRef<THREE.Mesh>(null);
-  let lastFrameTime = 0;
 
   useFrame(({ clock }) => {
     if (!ref.current) return;
     const timestamp = clock.getElapsedTime();
-
-    lastFrameTime = timestamp;
 
     const material: any = ref.current.material;
     const timeLocation = material.uniforms.u_time;
     timeLocation.value = timestamp;
   });
 
-  const getUniforms = () => {
-    const preparedUniforms: any = {};
-
-    for (const uniformName in uniforms) {
-      const uniform: any = uniforms[uniformName];
-
-      switch (uniform.type) {
-        case "uniform1f":
-          preparedUniforms[uniformName] = { value: uniform.value, type: "1f" };
-          break;
-        case "uniform1i":
-          preparedUniforms[uniformName] = { value: uniform.value, type: "1i" };
-          break;
-        case "uniform3f":
-          preparedUniforms[uniformName] = {
-            value: new THREE.Vector3().fromArray(uniform.value),
-            type: "3f",
-          };
-          break;
-        case "uniform1fv":
-          preparedUniforms[uniformName] = { value: uniform.value, type: "1fv" };
-          break;
-        case "uniform3fv":
-          preparedUniforms[uniformName] = {
-            value: uniform.value.map((v: number[]) =>
-              new THREE.Vector3().fromArray(v)
-            ),
-            type: "3fv",
-          };
-          break;
-        case "uniform2f":
-          preparedUniforms[uniformName] = {
-            value: new THREE.Vector2().fromArray(uniform.value),
-            type: "2f",
-          };
-          break;
-        default:
-          console.error(`Invalid uniform type for '${uniformName}'.`);
-          break;
-      }
-    }
-
-    preparedUniforms["u_time"] = { value: 0, type: "1f" };
-    preparedUniforms["u_resolution"] = {
-      value: new THREE.Vector2(size.width * 2, size.height * 2),
-    }; // Initialize u_resolution
-    return preparedUniforms;
-  };
-
   // Shader material
   const material = useMemo(() => {
+    const getUniforms = () => {
+      const preparedUniforms: any = {};
+
+      for (const uniformName in uniforms) {
+        const uniform: any = uniforms[uniformName];
+
+        switch (uniform.type) {
+          case "uniform1f":
+            preparedUniforms[uniformName] = { value: uniform.value, type: "1f" };
+            break;
+          case "uniform1i":
+            preparedUniforms[uniformName] = { value: uniform.value, type: "1i" };
+            break;
+          case "uniform3f":
+            preparedUniforms[uniformName] = {
+              value: new THREE.Vector3().fromArray(uniform.value),
+              type: "3f",
+            };
+            break;
+          case "uniform1fv":
+            preparedUniforms[uniformName] = { value: uniform.value, type: "1fv" };
+            break;
+          case "uniform3fv":
+            preparedUniforms[uniformName] = {
+              value: uniform.value.map((v: number[]) =>
+                new THREE.Vector3().fromArray(v)
+              ),
+              type: "3fv",
+            };
+            break;
+          case "uniform2f":
+            preparedUniforms[uniformName] = {
+              value: new THREE.Vector2().fromArray(uniform.value),
+              type: "2f",
+            };
+            break;
+          default:
+            console.error(`Invalid uniform type for '${uniformName}'.`);
+            break;
+        }
+      }
+
+      preparedUniforms["u_time"] = { value: 0, type: "1f" };
+      preparedUniforms["u_resolution"] = {
+        value: new THREE.Vector2(size.width * 2, size.height * 2),
+      }; // Initialize u_resolution
+      return preparedUniforms;
+    };
+
     const materialObject = new THREE.ShaderMaterial({
       vertexShader: `
       precision mediump float;
@@ -344,7 +338,7 @@ const ShaderMaterial = ({
     });
 
     return materialObject;
-  }, [size.width, size.height, source]);
+  }, [size.width, size.height, source, uniforms]);
 
   return (
     <mesh ref={ref as any}>
@@ -369,9 +363,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
   const [step, setStep] = useState<"signin" | "success">("signin");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  
-  const signInMutation = useMutation(api.myFunctions.signIn);
-  const signInWithGoogleMutation = useMutation(api.myFunctions.signInWithGoogle);
+
   const { signIn } = useAuthActions();
   const router = useRouter();
 
@@ -386,7 +378,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
         formData.set("email", email);
         formData.set("password", password);
         formData.set("flow", "signIn");
-        
+
         await signIn("password", formData);
         setStep("success");
       } catch (err: any) {
@@ -414,18 +406,13 @@ export const SignInPage = ({ className }: SignInPageProps) => {
     }
   };
 
-  const handleBackClick = () => {
-    setStep("signin");
-    setError(null);
-  };
-
   // Auto-redirect to dashboard after successful authentication
   useEffect(() => {
     if (step === "success") {
       const timer = setTimeout(() => {
         router.push("/dashboard");
       }, 2000); // Wait 2 seconds to show success animation
-      
+
       return () => clearTimeout(timer);
     }
   }, [step, router]);
@@ -446,11 +433,11 @@ export const SignInPage = ({ className }: SignInPageProps) => {
             reverse={false}
           />
         </div>
-        
+
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(0,0,0,1)_0%,_transparent_100%)]" />
         <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-black to-transparent" />
       </div>
-      
+
       {/* Content Layer */}
       <div className="relative z-10 flex flex-col flex-1">
         {/* Top navigation */}
@@ -463,7 +450,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
             <div className="w-full mt-[150px] max-w-sm">
               <AnimatePresence mode="wait">
                 {step === "signin" ? (
-                  <motion.div 
+                  <motion.div
                     key="signin-step"
                     initial={{ opacity: 0, x: -100 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -475,9 +462,9 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                       <h1 className="text-[2.5rem] font-bold leading-[1.1] tracking-tight text-white">Welcome Developer</h1>
                       <p className="text-[1.8rem] text-white/70 font-light">Your sign in component</p>
                     </div>
-                    
+
                     <div className="space-y-4">
-                      <button 
+                      <button
                         onClick={handleGoogleSignIn}
                         disabled={isLoading}
                         className="backdrop-blur-[2px] w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-full py-3 px-4 transition-colors disabled:opacity-50"
@@ -485,17 +472,17 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                         <span className="text-lg">G</span>
                         <span>{isLoading ? "Signing in..." : "Sign in with Google"}</span>
                       </button>
-                      
+
                       <div className="flex items-center gap-4">
                         <div className="h-px bg-white/10 flex-1" />
                         <span className="text-white/40 text-sm">or</span>
                         <div className="h-px bg-white/10 flex-1" />
                       </div>
-                      
+
                       <form onSubmit={handleSignIn} className="space-y-4">
                         <div className="space-y-3">
-                          <input 
-                            type="email" 
+                          <input
+                            type="email"
                             placeholder="Email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -503,8 +490,8 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                             required
                             disabled={isLoading}
                           />
-                          <input 
-                            type="password" 
+                          <input
+                            type="password"
                             placeholder="Password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -513,7 +500,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                             disabled={isLoading}
                           />
                         </div>
-                        <button 
+                        <button
                           type="submit"
                           disabled={isLoading || !email || !password}
                           className="w-full rounded-full bg-white text-black font-medium py-3 hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -522,9 +509,9 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                         </button>
                       </form>
                     </div>
-                    
+
                     {error && (
-                      <motion.div 
+                      <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg"
@@ -532,13 +519,13 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                         <p className="text-red-400 text-sm text-center">{error}</p>
                       </motion.div>
                     )}
-                    
+
                     <p className="text-xs text-white/40 pt-10">
                       By signing up, you agree to the <Link href="#" className="underline text-white/40 hover:text-white/60 transition-colors">MSA</Link>, <Link href="#" className="underline text-white/40 hover:text-white/60 transition-colors">Product Terms</Link>, <Link href="#" className="underline text-white/40 hover:text-white/60 transition-colors">Policies</Link>, <Link href="#" className="underline text-white/40 hover:text-white/60 transition-colors">Privacy Notice</Link>, and <Link href="#" className="underline text-white/40 hover:text-white/60 transition-colors">Cookie Notice</Link>.
                     </p>
                   </motion.div>
                 ) : (
-                  <motion.div 
+                  <motion.div
                     key="success-step"
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -546,11 +533,11 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                     className="space-y-6 text-center"
                   >
                     <div className="space-y-1">
-                      <h1 className="text-[2.5rem] font-bold leading-[1.1] tracking-tight text-white">You're in!</h1>
+                      <h1 className="text-[2.5rem] font-bold leading-[1.1] tracking-tight text-white">You&apos;re in!</h1>
                       <p className="text-[1.25rem] text-white/50 font-light">Welcome</p>
                     </div>
-                    
-                    <motion.div 
+
+                    <motion.div
                       initial={{ scale: 0.8, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ duration: 0.5, delay: 0.5 }}
@@ -562,8 +549,8 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                         </svg>
                       </div>
                     </motion.div>
-                    
-                    <motion.button 
+
+                    <motion.button
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 1 }}
@@ -579,7 +566,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
               </AnimatePresence>
             </div>
           </div>
-          
+
         </div>
       </div>
     </div>
