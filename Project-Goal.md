@@ -209,6 +209,7 @@ Together, they provide **faster situational awareness**, **reduce misinformation
 
 * ✅ Base Next.js project setup
 * ✅ Tailwind + shadcn/ui integration
+* ✅ Convex database + Convex auth
 * 🔲 Map integration (Leaflet/Mapbox)
 * 🔲 Citizen reports API integration
 * 🔲 Social media NLP feed integration
