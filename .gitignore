@@ -11,8 +11,7 @@
 !.yarn/versions
 
 # documentations
-/PRD.md
-/Project-Goal.md
+/doc
 
 # testing
 /coverage
